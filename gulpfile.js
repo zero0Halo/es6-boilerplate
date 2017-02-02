@@ -49,8 +49,8 @@ gulp.task('less', ()=> {
 
 
 gulp.task('images', () => {
-  return gulp.src('./src/images/*.+(png|jpg|gif)')
-    .pipe( changed('./build/images') )
+  return gulp.src('src/images/*.+(png|jpg|gif)')
+    .pipe( changed('build/images') )
     .pipe( imagemin() )
     .pipe( gulp.dest('./build/images/') )
 });
