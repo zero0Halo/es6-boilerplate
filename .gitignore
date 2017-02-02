@@ -1,3 +1,5 @@
 node_modules/
-build/*.*
-build/images/*.*
+build/*
+build/images/*
+!build/.gitkeep
+!build/images/.gitkeep
