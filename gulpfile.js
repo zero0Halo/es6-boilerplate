@@ -34,7 +34,7 @@ gulp.task('less', ()=> {
 });
 
 
-// Transpile es6 to es5 with sourcemaps
+// Transpile es6 to es5 with sourcemaps and puts it in a temp directory
 gulp.task('es6-commonjs', () => {
   return gulp.src('./src/js/**/*.js')
     .pipe(sourcemaps.init())
@@ -46,7 +46,7 @@ gulp.task('es6-commonjs', () => {
 });
 
 
-// Use browserify to let me use es6 modules
+// Use browserify for es6 module usage based one what's in the temp directory
 gulp.task('commonjs-bundle', () => {
   return browserify('./build/temp/app.js').bundle()
     .pipe(source('./build/temp/app.js'))
