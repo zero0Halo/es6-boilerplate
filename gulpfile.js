@@ -3,6 +3,10 @@ const sourcemaps = require('gulp-sourcemaps');
 const plumber = require('gulp-plumber');
 const fs = require('fs');
 const gutils = require('gulp-util');
+const path = require('path');
+//------------------------------------------------
+const changed = require('gulp-changed');
+const imagemin = require('gulp-imagemin');
 //------------------------------------------------
 const babel = require('gulp-babel');
 const browserify = require('browserify');
@@ -41,6 +45,14 @@ gulp.task('less', ()=> {
     .pipe(sourcemaps.write())
     .pipe(plumber.stop())
     .pipe(gulp.dest('./build/'));
+});
+
+
+gulp.task('images', () => {
+  return gulp.src('./src/images/*.+(png|jpg|gif)')
+    .pipe( changed('./build/images') )
+    .pipe( imagemin() )
+    .pipe( gulp.dest('./build/images/') )
 });
 
 
@@ -95,10 +107,22 @@ gulp.task('transcode-js', ['commonjs-bundle'], () => {
 
 // Watches for index.html, less and js changes
 gulp.task('watcher', () => {
-  gulp.watch(
-    ['./src/index.html', './src/js/**/*.js', './src/less/**/*.less'],
-    ['html', 'transcode-js', 'less']
+  var watcher = gulp.watch(
+    ['./src/index.html', 'src/images/*.+(png|jpg|gif)', 'src/js/**/*.js', 'src/less/**/*.less'],
+    ['html', 'images', 'transcode-js', 'less']
   );
+
+  watcher.on('change', (event) => {
+    if(event.type === 'deleted') {
+      // Simulating the {base: 'src'} used with gulp.src in the scripts task
+      var filePathFromSrc = path.relative(path.resolve('src'), event.path);
+
+      // Concatenating the 'build' absolute path used by gulp.dest in the scripts task
+      var destFilePath = path.resolve('build', filePathFromSrc);
+
+      del.sync(destFilePath);
+    }
+  });
 });
 
 
@@ -112,4 +136,4 @@ gulp.task('server', () =>
 
 
 // Default task to rule them all
-gulp.task('default', ['html', 'less', 'transcode-js', 'watcher', 'server'], () => {});
+gulp.task('default', ['html', 'less', 'images', 'transcode-js', 'watcher', 'server'], () => {});

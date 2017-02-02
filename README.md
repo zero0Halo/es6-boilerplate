@@ -11,6 +11,7 @@ This is a basic boilerplate that provides ES6 transcoding to ES5 with support fo
 * Basic server with live-reload
 * Simple 3 file build output, `index.html`, `bundle.js` and `index.css`
 * Formatted error handling w/o killing watch processes (gulp)
+* Lossless image optimization
 
 ##Requirements
 
