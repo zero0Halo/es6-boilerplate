@@ -5,12 +5,14 @@ This is a basic boilerplate that provides ES6 transcoding to ES5 with support fo
 ##Features
 
 * LESS
+* reset.css
 * Sourcemaps for both CSS and JS
 * Uglified and minified CSS and JS files
 * Basic server with live-reload
-* Simple 3 file build output, `index.html`, `bundle.js` and `index.css`.
+* Simple 3 file build output, `index.html`, `bundle.js` and `index.css`
+* Formatted error handling w/o killing watch processes (gulp)
 
-##Requirments
+##Requirements
 
 * git
 * npm

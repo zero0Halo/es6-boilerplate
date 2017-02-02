@@ -2,6 +2,7 @@ const gulp = require('gulp');
 const sourcemaps = require('gulp-sourcemaps');
 const plumber = require('gulp-plumber');
 const fs = require('fs');
+const gutils = require('gulp-util');
 //------------------------------------------------
 const babel = require('gulp-babel');
 const browserify = require('browserify');
@@ -30,7 +31,7 @@ gulp.task('less', ()=> {
   return gulp.src('./src/less/index.less')
     .pipe(plumber({
         errorHandler: function (err) {
-          console.log(err);
+          gutils.log(gutils.colors.red(err));
           this.emit('end');
         }
     }))
@@ -48,7 +49,7 @@ gulp.task('es6-commonjs', () => {
   return gulp.src('./src/js/**/*.js')
     .pipe(plumber({
         errorHandler: function (err) {
-          console.log(err);
+          gutils.log(gutils.colors.red(err));
           this.emit('end');
         }
     }))
@@ -71,7 +72,7 @@ gulp.task('commonjs-bundle', ['es6-commonjs'], () => {
     return browserify('./build/temp/app.js').bundle()
       .pipe(plumber({
           errorHandler: function (err) {
-            console.log(err);
+            gutils.log(gutils.colors.red(err));
             this.emit('end');
           }
       }))
