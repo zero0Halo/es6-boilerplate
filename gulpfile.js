@@ -1,5 +1,6 @@
 const gulp = require('gulp');
 const sourcemaps = require('gulp-sourcemaps');
+const plumber = require('gulp-plumber');
 //------------------------------------------------
 const babel = require('gulp-babel');
 const browserify = require('browserify');
@@ -26,6 +27,12 @@ gulp.task('html', () => {
 // Compile less down to css and put it in the build folder
 gulp.task('less', ()=> {
   return gulp.src('./src/less/index.less')
+    .pipe(plumber({
+        errorHandler: function (err) {
+          console.log(err);
+          this.emit('end');
+        }
+    }))
     .pipe(sourcemaps.init())
     .pipe(less())
     .pipe(mincss())
