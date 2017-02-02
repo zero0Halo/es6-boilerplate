@@ -1,6 +1,7 @@
 const gulp = require('gulp');
 const sourcemaps = require('gulp-sourcemaps');
 const plumber = require('gulp-plumber');
+const fs = require('fs');
 //------------------------------------------------
 const babel = require('gulp-babel');
 const browserify = require('browserify');
@@ -37,6 +38,7 @@ gulp.task('less', ()=> {
     .pipe(less())
     .pipe(mincss())
     .pipe(sourcemaps.write())
+    .pipe(plumber.stop())
     .pipe(gulp.dest('./build/'));
 });
 
@@ -44,39 +46,58 @@ gulp.task('less', ()=> {
 // Transpile es6 to es5 with sourcemaps and puts it in a temp directory
 gulp.task('es6-commonjs', () => {
   return gulp.src('./src/js/**/*.js')
+    .pipe(plumber({
+        errorHandler: function (err) {
+          console.log(err);
+          this.emit('end');
+        }
+    }))
     .pipe(sourcemaps.init())
     .pipe( babel({
         presets: ['es2015']
     }) )
     .pipe(sourcemaps.write('.'))
+    .pipe(plumber.stop())
     .pipe( gulp.dest('./build/temp/') );
 });
 
 
 // Use browserify for es6 module usage based one what's in the temp directory
-gulp.task('commonjs-bundle', () => {
-  return browserify('./build/temp/app.js').bundle()
-    .pipe(source('./build/temp/app.js'))
-    .pipe(buffer())
-    .pipe(uglify())
-    .pipe(rename('bundle.js'))
-    .pipe(gulp.dest('./build/'));
+gulp.task('commonjs-bundle', ['es6-commonjs'], () => {
+  var appJsExists = fs.existsSync('./build/temp/app.js');
+
+  // Need to make this check, because if es6-commonjs failed gulp.watch will die because the file isn't there
+  if(appJsExists){
+    return browserify('./build/temp/app.js').bundle()
+      .pipe(plumber({
+          errorHandler: function (err) {
+            console.log(err);
+            this.emit('end');
+          }
+      }))
+      .pipe(source('./build/temp/app.js'))
+      .pipe(buffer())
+      .pipe(uglify())
+      .pipe(rename('bundle.js'))
+      .pipe(plumber.stop())
+      .pipe(gulp.dest('./build/'));
+  }
+
 });
 
 
 // Transpiles es6 to es5, including modules, and when done destroys the temp directory
-gulp.task('transcode-js', ['es6-commonjs', 'commonjs-bundle'], () => {
+gulp.task('transcode-js', ['commonjs-bundle'], () => {
   return del(['./build/temp/']);
 });
 
 
 // Watches for index.html, less and js changes
 gulp.task('watcher', () => {
-  gulp.watch('./src/index.html', ['html']);
-
-  gulp.watch('./src/js/**/*.js', ['transcode-js']);
-
-  gulp.watch('./src/less/**/*.less', ['less']);
+  gulp.watch(
+    ['./src/index.html', './src/js/**/*.js', './src/less/**/*.less'],
+    ['html', 'transcode-js', 'less']
+  );
 });
 
 
