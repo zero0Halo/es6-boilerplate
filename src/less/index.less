@@ -1,11 +1,38 @@
 @import 'reset.less';
 
-body {
-  background-color: #d5d5d5;
+* {
+  box-sizing: border-box;
 }
 
-h1 {
-  padding: 16px;
-  font-family:verdana;
-  font-size:20pt;
+body {
+  font-size:10px;
+  background-color: #333;
+}
+
+// Welcome message. Feel free to delete it.
+.welcome {
+  background: transparent url(./images/es6.png) no-repeat left bottom;
+  background-size:contain;
+  height: 30em;
+  width: 30em;
+  position: absolute;
+  top:50%;
+  left:50%;
+  transform: translateY(-50%) translateX(-50%);
+
+  strong {
+    text-transform: uppercase;
+    font-family: Arial;
+    font-weight:bold;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size:3em;
+    width: 100%;
+    background-color: rgba( 0,0,0,0.7 );
+    color: #fff;
+    text-align: center;
+    padding: 0.2em;
+    letter-spacing: 0.1em;
+  }
 }
