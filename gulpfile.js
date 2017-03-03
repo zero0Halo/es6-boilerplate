@@ -142,7 +142,7 @@ gulp.task('default', ['html', 'less', 'images', 'transcode-js', 'watcher'], () =
       livereload: {
         enable: true,
         filter: fileName => {
-          if (fileName.match(/.map$/) || fileName.match(/\/temp\//)) { // exclude all source maps from livereload
+          if (fileName.match(/.js$/) || fileName.match(/\/temp\//)) { // exclude all source maps from livereload
             return false;
           } else {
             return true;
