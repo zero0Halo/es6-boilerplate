@@ -1,3 +1,5 @@
+'use strict';
+
 const gulp = require('gulp');
 const sourcemaps = require('gulp-sourcemaps');
 const plumber = require('gulp-plumber');
@@ -71,28 +73,30 @@ gulp.task('es6-commonjs', () => {
     }) )
     .pipe(sourcemaps.write('.'))
     .pipe(plumber.stop())
-    .pipe( gulp.dest('./build/temp/') );
+    .pipe( gulp.dest('./src/temp/') );
 });
 
 
 // Use browserify for es6 module usage based one what's in the temp directory
 gulp.task('commonjs-bundle', ['es6-commonjs'], () => {
-  var appJsExists = fs.existsSync('./build/temp/app.js');
+  var appJsExists = fs.existsSync('./src/temp/app.js');
 
   // Need to make this check, because if es6-commonjs failed gulp.watch will die because the file isn't there
   if(appJsExists){
-    return browserify('./build/temp/app.js').bundle()
+    return browserify('./src/temp/app.js').bundle()
       .pipe(plumber({
           errorHandler: function (err) {
             gutils.log(gutils.colors.red(err));
             this.emit('end');
           }
       }))
-      .pipe(source('./build/temp/app.js'))
+      .pipe(source('./src/temp/app.js'))
       .pipe(buffer())
+      .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(uglify())
       .pipe(rename('bundle.js'))
       .pipe(plumber.stop())
+      .pipe(sourcemaps.write('.'))
       .pipe(gulp.dest('./build/'));
   }
 
@@ -101,18 +105,13 @@ gulp.task('commonjs-bundle', ['es6-commonjs'], () => {
 
 // Transpiles es6 to es5, including modules, and when done destroys the temp directory
 gulp.task('transcode-js', ['commonjs-bundle'], () => {
-  return del(['./build/temp/']);
+  return del(['./src/temp/*', '!./src/temp/.gitkeep']);
 });
 
 
 // Watches for index.html, less and js changes
 gulp.task('watcher', () => {
-  var watcher = gulp.watch(
-    ['./src/index.html', 'src/images/*.+(png|jpg|gif)', 'src/js/**/*.js', 'src/less/**/*.less'],
-    ['html', 'images', 'transcode-js', 'less']
-  );
-
-  watcher.on('change', (event) => {
+  let handleDelete = event => {
     if(event.type === 'deleted') {
       // Simulating the {base: 'src'} used with gulp.src in the scripts task
       var filePathFromSrc = path.relative(path.resolve('src'), event.path);
@@ -122,18 +121,34 @@ gulp.task('watcher', () => {
 
       del.sync(destFilePath);
     }
-  });
+  };
+
+  let html = gulp.watch('src/index.html', ['html']);
+  let images = gulp.watch('src/images/*.+(png|jpg|gif)', ['images']);
+  let js = gulp.watch('src/js/**/*.js', ['transcode-js']);
+  let less = gulp.watch('src/less/**/*.less', ['less']);
+
+  html.on('change', handleDelete);
+  images.on('change', handleDelete);
+  js.on('change', handleDelete);
+  less.on('change', handleDelete);
 });
 
 
-// Starts a basic server
-gulp.task('server', () =>
+// Default task to rule them all
+gulp.task('default', ['html', 'less', 'images', 'transcode-js', 'watcher'], () => {
   gulp.src('build')
     .pipe( webserver({
-      livereload: true
-    }))
-);
-
-
-// Default task to rule them all
-gulp.task('default', ['html', 'less', 'images', 'transcode-js', 'watcher', 'server'], () => {});
+      livereload: {
+        enable: true,
+        filter: fileName => {
+          if (fileName.match(/.map$/) || fileName.match(/\/temp\//)) { // exclude all source maps from livereload
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      open: true
+    }));
+});

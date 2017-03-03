@@ -1,4 +1,6 @@
 node_modules/
+src/temp/*.*
+!src/temp/.gitkeep
 build/*.*
 build/images/*
 !build/.gitkeep
