@@ -93,7 +93,7 @@ gulp.task('commonjs-bundle', ['es6-commonjs'], () => {
       .pipe(source('./src/temp/app.js'))
       .pipe(buffer())
       .pipe(sourcemaps.init({loadMaps: true}))
-      .pipe(uglify())
+      .pipe(uglify({mangle:false}))
       .pipe(rename('bundle.js'))
       .pipe(plumber.stop())
       .pipe(sourcemaps.write('.'))
